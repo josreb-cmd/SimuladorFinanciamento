@@ -3,263 +3,168 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador Completo </title>
-
+  <title>Simulador Crédito Habitação 2026</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 15px;
-      line-height: 1.4;
-    }
-
-    h1, h2 {
-      text-align: center;
-      margin-bottom: 15px;
-    }
-
-    label {
-      display: block;
-      margin-top: 14px;
-      font-weight: bold;
-      font-size: 1rem;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 20px;
-      font-size: 1.1rem;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .resultado {
-      margin-top: 20px;
-      padding: 14px;
-      background: #f5f5f5;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-
-    .limpar {
-      background: #b30000;
-      color: white;
-    }
-
-    button:not(.limpar) {
-      background: #005bbb;
-      color: white;
-    }
-
-    hr {
-      margin: 30px 0;
-    }
-
-    /* ----------- MOBILE OPTIMIZATION ----------- */
-    @media (max-width: 480px) {
-      body {
-        padding: 10px;
-      }
-
-      h1 {
-        font-size: 1.4rem;
-      }
-
-      h2 {
-        font-size: 1.2rem;
-      }
-
-      input, button {
-        font-size: 1rem;
-        padding: 12px;
-      }
-
-      label {
-        font-size: 0.95rem;
-      }
-    }
+    :root { --primary: #1a2a6c; --secondary: #00a8ff; --success: #27ae60; --danger: #e84118; --bg: #f4f7f9; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: #2f3640; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+    h2 { font-size: 1.1rem; color: var(--primary); border-bottom: 2px solid #edf2f7; padding-bottom: 10px; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+    label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.85rem; }
+    input { width: 100%; padding: 12px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+    .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-max { background: var(--success); color: white; }
+    .btn-main { background: var(--primary); color: white; }
+    .btn-email { background: #444; color: white; }
+    .result-area { margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 10px; border-left: 5px solid var(--primary); display: none; }
+    .res-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+    .highlight { font-size: 1.4rem; font-weight: 900; color: var(--primary); }
+    .jovem-box { background: #e3f2fd; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin: 15px 0; border: 1px solid #bbdefb; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--secondary); }
+    input:checked + .slider:before { transform: translateX(22px); }
+    /* MODAL */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 500px; width: 90%; }
+    .modal-value { font-size: 2.5rem; font-weight: 900; color: var(--success); margin: 15px 0; display: block; }
+    .btn-close { background: var(--primary); color: white; padding: 12px 30px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
   </style>
 </head>
-
 <body>
 
-<h1>Simulador Crédito Habitação</h1>
+<div class="container">
+  <h1 style="text-align:center; color: var(--primary);">Simulador Imobiliário 2026</h1>
 
-<button class="limpar" onclick="limparTudo()">Limpar tudo</button>
+  <div class="card">
+    <h2>1. Rendimento e Financiamento Máximo</h2>
+    <div class="grid">
+      <div class="form-group"><label>Rendimento Líquido Mensal (€)</label><input type="text" id="rend" value="2.500" oninput="fInput(this)"></div>
+      <div class="form-group"><label>Outras Prestações (€)</label><input type="text" id="outras" value="0" oninput="fInput(this)"></div>
+      <div class="form-group"><label>TAN Juro (%)</label><input type="number" id="tan" value="3.5" step="0.01"></div>
+      <div class="form-group"><label>Prazo (Anos)</label><input type="number" id="anos" value="35"></div>
+    </div>
+    <button class="btn btn-max" onclick="calcMax()">📈 Calcular Financiamento Máximo</button>
+  </div>
 
-<!-- ========================= -->
-<!-- 1) Financiamento Máximo -->
-<!-- ========================= -->
+  <div class="card">
+    <h2>2. Detalhes da Compra</h2>
+    <div class="grid">
+      <div class="form-group"><label>Valor de Compra (€)</label><input type="text" id="v_compra" value="250.000" oninput="fInput(this)"></div>
+      <div class="form-group"><label>Valor do Empréstimo (€)</label><input type="text" id="v_finan" value="225.000" oninput="fInput(this)"></div>
+    </div>
+    <div class="jovem-box">
+      <div><strong>Benefício Jovem (Isenção IMT/Selo)</strong></div>
+      <label class="switch"><input type="checkbox" id="is_jovem"><span class="slider"></span></label>
+    </div>
+    <button class="btn btn-main" onclick="simular()">📊 Simular Custos Totais</button>
+    <button class="btn btn-email" onclick="enviarEmail()">✉️ Enviar Simulação por Email</button>
+  </div>
 
-<h2>1) Financiamento Máximo com DSTI ≤ 50%</h2>
+  <div id="res" class="result-area card">
+    <div class="res-line"><span>Prestação Mensal:</span> <span id="rP" class="highlight"></span></div>
+    <div class="res-line"><span>IMT + Imposto Selo Compra:</span> <span id="rI"></span></div>
+    <div class="res-line"><span>Imposto Selo Crédito (0.6%):</span> <span id="rSC"></span></div>
+    <div class="res-line"><span>Escritura e Registos (est.):</span> <span id="rE">1.200,00 €</span></div>
+    <div class="res-line" style="border:none; margin-top:15px; background: #fff3cd; padding:15px; border-radius:8px;">
+      <strong>Dinheiro Total Necessário (Entrada + Custos):</strong>
+      <strong id="rT" style="color:var(--danger); font-size:1.4rem;"></strong>
+    </div>
+  </div>
+</div>
 
-<label>Rendimento mensal líquido (€)</label>
-<input type="text" id="rendimento">
-
-<label>Encargo mensal com outros créditos (€/mês)</label>
-<input type="text" id="prestacoes">
-
-<label>TAN Eur6M/Eur12M + Spread (%)</label>
-<input type="number" id="tan2" min="0" step="0.001">
-
-<label>Prazo (anos)</label>
-<input type="number" id="anos2" min="1" max="40">
-
-<button onclick="calcularFinanciamentoMax()">Calcular Financiamento Máximo</button>
-
-<div class="resultado" id="resFinanciamento"></div>
-
-<hr>
-
-<!-- ========================= -->
-<!-- 2) Prestação Mensal -->
-<!-- ========================= -->
-
-<h2>2) Cálculo da Prestação Mensal</h2>
-
-<label>Valor do financiamento (€)</label>
-<input type="text" id="capital">
-
-<label>TAN (%)</label>
-<input type="number" id="tan1" min="0" step="0.001">
-
-<label>Prazo (anos)</label>
-<input type="number" id="anos1" min="1" max="40">
-
-<button onclick="calcularPrestacao()">Calcular Prestação</button>
-
-<div class="resultado" id="resPrestacao"></div>
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-content">
+    <div style="font-size:1.2rem; color:#666;">Financiamento Máximo Sugerido</div>
+    <div class="modal-value" id="modalValue">0,00 €</div>
+    <button class="btn-close" onclick="closeModal()">FECHAR</button>
+  </div>
+</div>
 
 <script>
-// =========================
-// Formatação
-// =========================
+  const fmt = v => v.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+  const pV = s => parseFloat(s.toString().replace(/[^\d]/g, '')) || 0;
+  function fInput(i) { let v = i.value.replace(/\D/g, ""); if(v) i.value = new Intl.NumberFormat('pt-PT').format(v); }
 
-function formatMoney(value) {
-  return value
-    .toFixed(2)
-    .replace('.', ',')
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-
-function formatPercent3(value) {
-  return value
-    .toFixed(3)
-    .replace('.', ',')
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-
-function parseValor(str) {
-  if (!str) return 0;
-  return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
-}
-
-// =========================
-// Prestação (método francês)
-// =========================
-
-function calcPrestacaoMensal(capital, tan, anos) {
-  const i = tan / 100 / 12;
-  const n = anos * 12;
-  if (i === 0) return capital / n;
-  return capital * (i / (1 - Math.pow(1 + i, -n)));
-}
-
-function calcularPrestacao() {
-  const capital = parseValor(document.getElementById('capital').value);
-  const tan = parseFloat(document.getElementById('tan1').value) || 0;
-  const anos = parseFloat(document.getElementById('anos1').value) || 0;
-
-  const res = document.getElementById('resPrestacao');
-
-  if (capital <= 0 || anos <= 0) {
-    res.innerHTML = "<strong>Preencha os valores corretamente.</strong>";
-    return;
+  function getPrestacao(capital, tanAnual, anos) {
+    const i = (tanAnual / 100) / 12;
+    const n = anos * 12;
+    return capital * (i / (1 - Math.pow(1 + i, -n)));
   }
 
-  const prestacao = calcPrestacaoMensal(capital, tan, anos);
+  function openModal(valor) { document.getElementById('modalValue').innerText = fmt(valor); document.getElementById('modalOverlay').style.display = 'flex'; }
+  function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
 
-  res.innerHTML = `
-    <p><strong>Prestação mensal:</strong> ${formatMoney(prestacao)} €</p>
-    <p><strong>TAN considerada:</strong> ${formatPercent3(tan)} %</p>
-  `;
-}
-
-// =========================
-// Financiamento máximo
-// =========================
-
-function calcularFinanciamentoMax() {
-  const rendimento = parseValor(document.getElementById('rendimento').value);
-  const prestacoes = parseValor(document.getElementById('prestacoes').value);
-  const tan = parseFloat(document.getElementById('tan2').value) || 0;
-  const anos = parseFloat(document.getElementById('anos2').value) || 0;
-
-  const res = document.getElementById('resFinanciamento');
-
-  if (rendimento <= 0 || anos <= 0) {
-    res.innerHTML = "<strong>Preencha os valores corretamente.</strong>";
-    return;
+  function calcMax() {
+    const r = pV(document.getElementById('rend').value), o = pV(document.getElementById('outras').value);
+    const t = parseFloat(document.getElementById('tan').value), a = parseInt(document.getElementById('anos').value);
+    const pMax = (r * 0.5) - o, iS = ((t + 1.5) / 100) / 12, n = a * 12;
+    const cMax = pMax * (1 - Math.pow(1 + iS, -n)) / iS;
+    document.getElementById('v_finan').value = new Intl.NumberFormat('pt-PT').format(Math.floor(cMax));
+    openModal(cMax);
   }
 
-  const dstiMax = rendimento * 0.50;
-  const prestacaoMax = dstiMax - prestacoes;
+  function simular() {
+    const vc = pV(document.getElementById('v_compra').value), vf = pV(document.getElementById('v_finan').value);
+    const t = parseFloat(document.getElementById('tan').value), a = parseInt(document.getElementById('anos').value);
+    const isJ = document.getElementById('is_jovem').checked;
 
-  if (prestacaoMax <= 0) {
-    res.innerHTML = "<strong>O agregado já excede o limite de DSTI.</strong>";
-    return;
+    const prest = getPrestacao(vf, t, a);
+    let tx, par;
+    if (vc <= 101917) { tx = 0; par = 0; }
+    else if (vc <= 139412) { tx = 0.02; par = 2038.34; }
+    else if (vc <= 190086) { tx = 0.05; par = 6220.70; }
+    else if (vc <= 316772) { tx = 0.07; par = 10022.42; }
+    else if (vc <= 633453) { tx = 0.08; par = 13190.14; }
+    else { tx = 0.075; par = 0; }
+
+    let imt = Math.max(0, (vc * tx) - par), sC = vc * 0.008;
+    if (isJ) { 
+        if (vc <= 316772) { imt = 0; sC = 0; } 
+        else if (vc <= 633453) { imt -= ((316772 * 0.07) - 10022.42); sC -= (316772 * 0.008); }
+    }
+    const sF = vf * 0.006, total = (vc - vf) + imt + sC + sF + 1200;
+
+    document.getElementById('res').style.display = 'block';
+    document.getElementById('rP').innerText = fmt(prest);
+    document.getElementById('rI').innerText = fmt(imt + sC);
+    document.getElementById('rSC').innerText = fmt(sF);
+    document.getElementById('rT').innerText = fmt(total);
   }
 
-  const tanStress = tan + 1.50;
-  const i = tanStress / 100 / 12;
-  const n = anos * 12;
+  function enviarEmail() {
+    const vF = document.getElementById('v_finan').value, vC = document.getElementById('v_compra').value;
+    const pz = document.getElementById('anos').value, pM = document.getElementById('rP').innerText;
+    const iS = document.getElementById('rI').innerText, sC = document.getElementById('rSC').innerText;
+    const esc = document.getElementById('rE').innerText, tot = document.getElementById('rT').innerText;
 
-  const capitalMax = i === 0
-    ? prestacaoMax * n
-    : prestacaoMax * (1 - Math.pow(1 + i, -n)) / i;
+    if (!pM) { alert("Simule primeiro para gerar os dados."); return; }
 
-  res.innerHTML = `
-    <p><strong>Prestação máxima permitida:</strong> ${formatMoney(prestacaoMax)} €</p>
-    <p><strong>TAN considerada (stress test):</strong> ${formatPercent3(tanStress)} %</p>
-    <p><strong>Financiamento máximo possível:</strong> ${formatMoney(capitalMax)} €</p>
-  `;
-}
-
-// =========================
-// Limpar tudo
-// =========================
-
-function limparTudo() {
-  document.getElementById('rendimento').value = "";
-  document.getElementById('prestacoes').value = "";
-  document.getElementById('tan2').value = "";
-  document.getElementById('anos2').value = "";
-  document.getElementById('resFinanciamento').innerHTML = "";
-
-  document.getElementById('capital').value = "";
-  document.getElementById('tan1').value = "";
-  document.getElementById('anos1').value = "";
-  document.getElementById('resPrestacao').innerHTML = "";
-}
+    const subject = encodeURIComponent("Resumo de Simulação Crédito Habitação");
+    const body = encodeURIComponent(
+      "RESUMO DA SIMULAÇÃO\n" +
+      "-------------------------------------------\n" +
+      "Valor financiamento: " + vF + " €\n" +
+      "Valor compra: " + vC + " €\n" +
+      "Prazo: " + pz + " anos\n" +
+      "Prestação mensal: " + pM + "\n\n" +
+      "IMT + Imposto Selo Compra: " + iS + "\n" +
+      "Imposto Selo Crédito (0.6%): " + sC + "\n" +
+      "Escritura e Registos: " + esc + "\n\n" +
+      "Dinheiro Total Necessário (Entrada + Custos):\n" + tot + "\n" +
+      "-------------------------------------------"
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  }
 </script>
-<!-- Cloudflare Web Analytics -->
+ <!-- Cloudflare Web Analytics -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
         data-cf-beacon='{"token": "0dc1371ec59643bfb902deb464cfcb8a"}'>
 </script>
 <!-- End Cloudflare Web Analytics -->
 
 </body>
-
 </html>
