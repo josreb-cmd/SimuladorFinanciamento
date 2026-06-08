@@ -576,39 +576,47 @@ function getStressAcrescimo(anos) {
 }
 
 // ─────────────────────────────────────────────
-// TABELA IMT 2026 — HPP (CORRIGIDO: valores atualizados)
+// TABELA IMT 2026 — HPP
 // Portaria nº 352-A/2024, em vigor para 2026
+// Método: cálculo marginal (cada escalão taxa apenas a fatia acima do limite anterior)
+// expresso como (vc × tx) - parcela_a_abater para eficiência
+// Parcelas derivadas matematicamente para garantir continuidade entre escalões
 // ─────────────────────────────────────────────
+function calcIMT_HPP(vc) {
+  // Escalões HPP 2026 com parcelas corretas (verificadas matematicamente)
+  if (vc <= 104261)  return 0;
+  if (vc <= 142618)  return (vc * 0.02)  - 2085.22;
+  if (vc <= 194479)  return (vc * 0.05)  - 6363.76;
+  if (vc <= 324058)  return (vc * 0.07)  - 10253.34;  // CORRIGIDO: era 10252.34
+  if (vc <= 648022)  return (vc * 0.08)  - 13493.92;
+  // Acima de 648.022 €: taxa marginal de 7,5% apenas sobre a parte acima
+  // IMT(648022) = 38347.84; parcela = 648022*0.075 - 38347.84 = 10253.81
+  return (vc * 0.075) - 10253.81;                     // CORRIGIDO: era tx flat sem parcela
+}
+
 function calcIMT(vc, tipoImovel, isJovem) {
   let imt = 0;
 
   if (tipoImovel === 'hpp') {
-    // Escalões HPP 2026
-    let tx, par;
-    if      (vc <= 104261)  { tx = 0;     par = 0; }
-    else if (vc <= 142618)  { tx = 0.02;  par = 2085.22; }
-    else if (vc <= 194479)  { tx = 0.05;  par = 6363.76; }
-    else if (vc <= 324058)  { tx = 0.07;  par = 10252.34; }
-    else if (vc <= 648022)  { tx = 0.08;  par = 13493.92; }
-    else                    { tx = 0.075; par = 0; }
+    imt = calcIMT_HPP(vc);
 
-    imt = Math.max(0, (vc * tx) - par);
-
-    // CORRIGIDO: isenção jovem com limite 2026 = 324.058 €
+    // Isenção Jovem — Lei nº 19/2024 (limites 2026)
     if (isJovem) {
       if (vc <= 324058) {
+        // Isenção total
         imt = 0;
       } else if (vc <= 648022) {
         // Isenção parcial: deduz o IMT que seria devido até 324.058 €
-        const imtBase324 = (324058 * 0.07) - 10252.34;
+        // IMT(324058) = 324058 * 0.07 - 10253.34 = 12430.72
+        const imtBase324 = 12430.72;
         imt = Math.max(0, imt - imtBase324);
       }
       // Acima de 648.022 € não há isenção jovem
     }
   } else {
-    // Hab. secundária / arrendamento — taxa única 6,5%
+    // Hab. secundária / arrendamento — taxa única 6,5% sobre valor total
     imt = vc * 0.065;
-    // Sem isenção jovem para hab. secundária
+    // Sem isenção jovem para hab. secundária/arrendamento
   }
 
   return Math.max(0, imt);
