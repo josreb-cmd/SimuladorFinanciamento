@@ -392,7 +392,7 @@
     <p>Cálculo de prestação, custos de aquisição e rácios regulatórios</p>
     <div class="header-badges">
       <span class="badge">BdP Rec. 5/2023</span>
-      <span class="badge">IMT 2026</span>
+      <span class="badge">IMT OC 40129/2026</span>
       <span class="badge">Isenção Jovem</span>
     </div>
   </div>
@@ -477,7 +477,7 @@
       <div>
         <div class="jovem-label">Benefício Jovem — Isenção IMT e Imposto Selo</div>
         <!-- CORRIGIDO: limite 2026 atualizado para 324.058 € -->
-        <div class="jovem-sublabel">Lei nº 19/2024 · Isenção total até 324.058 € · Isenção parcial até 648.022 €</div>
+        <div class="jovem-sublabel">Lei nº 19/2024 · Isenção total HPP até 330.539 € · Isenção parcial até 660.982 €</div>
       </div>
       <label class="switch"><input type="checkbox" id="is_jovem"><span class="slider"></span></label>
     </div>
@@ -576,47 +576,46 @@ function getStressAcrescimo(anos) {
 }
 
 // ─────────────────────────────────────────────
-// TABELA IMT 2026 — HPP
-// Portaria nº 352-A/2024, em vigor para 2026
-// Método: cálculo marginal (cada escalão taxa apenas a fatia acima do limite anterior)
-// expresso como (vc × tx) - parcela_a_abater para eficiência
-// Parcelas derivadas matematicamente para garantir continuidade entre escalões
+// TABELA IMT 2026 — Ofício Circulado AT n.º 40129/2026 (6 jan 2026, Continente)
+// Fórmula AT: IMT = Valor × Taxa - Parcela a Abater
 // ─────────────────────────────────────────────
+
+// TABELA I — Habitação Própria Permanente
 function calcIMT_HPP(vc) {
-  // Escalões HPP 2026 com parcelas corretas (verificadas matematicamente)
-  if (vc <= 104261)  return 0;
-  if (vc <= 142618)  return (vc * 0.02)  - 2085.22;
-  if (vc <= 194479)  return (vc * 0.05)  - 6363.76;
-  if (vc <= 324058)  return (vc * 0.07)  - 10253.34;  // CORRIGIDO: era 10252.34
-  if (vc <= 648022)  return (vc * 0.08)  - 13493.92;
-  // Acima de 648.022 €: taxa marginal de 7,5% apenas sobre a parte acima
-  // IMT(648022) = 38347.84; parcela = 648022*0.075 - 38347.84 = 10253.81
-  return (vc * 0.075) - 10253.81;                     // CORRIGIDO: era tx flat sem parcela
+  if (vc <= 106346)   return 0;
+  if (vc <= 145470)   return (vc * 0.02)  - 2126.92;
+  if (vc <= 198347)   return (vc * 0.05)  - 6491.02;
+  if (vc <= 330539)   return (vc * 0.07)  - 10457.96;
+  if (vc <= 660982)   return (vc * 0.08)  - 13763.35;
+  if (vc <= 1150853)  return  vc * 0.06;   // taxa única, sem parcela
+  return vc * 0.075;                        // taxa única, sem parcela
+}
+
+// TABELA II — Habitação Secundária / Arrendamento
+function calcIMT_Sec(vc) {
+  if (vc <= 106346)   return  vc * 0.01;
+  if (vc <= 145470)   return (vc * 0.02)  - 1063.46;
+  if (vc <= 198347)   return (vc * 0.05)  - 5427.56;
+  if (vc <= 330539)   return (vc * 0.07)  - 9394.50;
+  if (vc <= 660982)   return (vc * 0.08)  - 12699.89;
+  if (vc <= 1150853)  return  vc * 0.06;   // taxa única, sem parcela
+  return vc * 0.075;                        // taxa única, sem parcela
 }
 
 function calcIMT(vc, tipoImovel, isJovem) {
-  let imt = 0;
+  let imt = tipoImovel === 'hpp' ? calcIMT_HPP(vc) : calcIMT_Sec(vc);
 
-  if (tipoImovel === 'hpp') {
-    imt = calcIMT_HPP(vc);
-
-    // Isenção Jovem — Lei nº 19/2024 (limites 2026)
-    if (isJovem) {
-      if (vc <= 324058) {
-        // Isenção total
-        imt = 0;
-      } else if (vc <= 648022) {
-        // Isenção parcial: deduz o IMT que seria devido até 324.058 €
-        // IMT(324058) = 324058 * 0.07 - 10253.34 = 12430.72
-        const imtBase324 = 12430.72;
-        imt = Math.max(0, imt - imtBase324);
-      }
-      // Acima de 648.022 € não há isenção jovem
+  // Isenção Jovem — Lei nº 19/2024 (limites 2026)
+  // Isenção total HPP até 330.539 € (teto 4.º escalão Tabela I)
+  if (isJovem && tipoImovel === 'hpp') {
+    if (vc <= 330539) {
+      imt = 0;
+    } else if (vc <= 660982) {
+      // Isenção parcial: deduz IMT que seria devido até 330.539 €
+      // IMT(330.539€) = 330539 × 0.07 - 10457.96 = 12679.77
+      imt = Math.max(0, imt - 12679.77);
     }
-  } else {
-    // Hab. secundária / arrendamento — taxa única 6,5% sobre valor total
-    imt = vc * 0.065;
-    // Sem isenção jovem para hab. secundária/arrendamento
+    // Acima de 660.982 € não há isenção jovem
   }
 
   return Math.max(0, imt);
@@ -864,8 +863,8 @@ function simular() {
 
   document.getElementById('notaLegal').innerHTML = `
     <strong>Nota metodológica:</strong>
-    IMT calculado conforme tabela HPP 2026 (Portaria nº 352-A/2024).
-    Isenção Jovem conforme Lei nº 19/2024: isenção total até 324.058 €, isenção parcial até 648.022 €.
+    IMT calculado conforme Ofício Circulado AT n.º 40129/2026 (6 jan 2026, Continente).
+    Isenção Jovem conforme Lei nº 19/2024: isenção total HPP até 330.539 €, isenção parcial até 660.982 €.
     DSTI calculado sobre rendimento líquido mensal — limite standard 50% (Rec. BdP nº 5/2023).
     ${tipo !== 'fixa' ? `Stress test aplicado com acréscimo de +${acrescimo.toFixed(1)} p.p. (Instrução BdP nº 23/2023, escalonado por prazo).` : 'Taxa fixa — sem stress test obrigatório.'}
     LTV limite: 90% HPP, 80% hab. secundária e arrendamento.
