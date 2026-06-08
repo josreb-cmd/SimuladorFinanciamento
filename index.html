@@ -472,6 +472,15 @@
       </div>
     </div>
 
+    <!-- CAMPO ESCRITURA EDITÁVEL -->
+    <div class="grid-2" style="margin-top:16px">
+      <div class="field">
+        <label>Escritura e Registos (€)</label>
+        <input type="text" id="escritura" value="1.500" oninput="fInput(this)">
+        <span class="hint">Estimativa editável — varia por notário</span>
+      </div>
+    </div>
+
     <!-- TOGGLE JOVEM -->
     <div class="jovem-box">
       <div>
@@ -739,7 +748,7 @@ function simular() {
   const imt    = calcIMT(vc, tipoIm, isJ);
   const seloC  = calcSeloCompra(vc, tipoIm, isJ);
   const seloF  = vf * 0.006;
-  const escrit = 1500; // estimativa atualizada
+  const escrit = pField('escritura');
   const entrada = Math.max(0, vc - vf);
   const total  = entrada + imt + seloC + seloF + escrit;
 
@@ -868,7 +877,7 @@ function simular() {
     DSTI calculado sobre rendimento líquido mensal — limite standard 50% (Rec. BdP nº 5/2023).
     ${tipo !== 'fixa' ? `Stress test aplicado com acréscimo de +${acrescimo.toFixed(1)} p.p. (Instrução BdP nº 23/2023, escalonado por prazo).` : 'Taxa fixa — sem stress test obrigatório.'}
     LTV limite: 90% HPP, 80% hab. secundária e arrendamento.
-    Escritura estimada em 1.500 €. Valores indicativos — consulte a sua instituição de crédito.
+    Escritura e registos conforme valor introduzido (editável). Valores indicativos — consulte a sua instituição de crédito.
   `;
 
   document.getElementById('res').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -929,7 +938,7 @@ function clearAutoTag() {
 // Init
 updateStressHint();
 // Inicializar dataset.raw nos campos formatados pré-preenchidos
-['rend', 'outras', 'v_compra', 'v_finan'].forEach(id => {
+['rend', 'outras', 'v_compra', 'v_finan', 'escritura'].forEach(id => {
   const el = document.getElementById(id);
   if (el) fInput(el);
 });
